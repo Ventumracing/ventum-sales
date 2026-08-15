@@ -15,10 +15,18 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install firebase-admin --quiet
+
       - name: Fetch Firebase data
-        run: |
-          curl -s "https://ventum-sales-default-rtdb.firebaseio.com/sales.json" > sales.json
-          echo "Fetched $(wc -c < sales.json) bytes"
+        env:
+          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
+        run: python3 scripts/fetch_sales.py sales.json
 
       - name: Generate CSV report
         run: python3 scripts/json_to_csv.py sales.json sales-report.csv
