@@ -20,13 +20,15 @@ jobs:
           curl -s "https://ventum-sales-default-rtdb.firebaseio.com/sales.json" > sales.json
           echo "Fetched $(wc -c < sales.json) bytes"
 
+      - name: Generate CSV report
+        run: python3 scripts/json_to_csv.py sales.json sales-report.csv
+
       - name: Commit and push if changed
         run: |
           git config user.email "github-actions@github.com"
           git config user.name "GitHub Actions"
-          git add sales.json
+          git add sales.json sales-report.csv
           git diff --staged --quiet || git commit -m "Auto-sync sales data $(date -u +%Y-%m-%d)"
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
