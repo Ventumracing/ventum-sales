@@ -667,7 +667,7 @@ const priorRecord=isEdit?(allData[editIdSnapshot]||null):null;
 const btn=document.getElementById('save-btn');
 btn.disabled=true; btn.textContent='Saving…'; btn.className='btn-submit saving';
 
-const payload={date,staff,retailPos:rp,retailPosCash:rpc,retailPosCard:rpk,retailCash:rc,retailCard:rk,
+const payload={date,staff,outlet:isEdit&&priorRecord?(priorRecord.outlet||'Ventum Racing'):'Ventum Racing',retailPos:rp,retailPosCash:rpc,retailPosCard:rpk,retailCash:rc,retailCard:rk,
 fnbPos:fpc+fpk+totalDelivery,fnbPosCash:fpc,fnbPosCard:fpk,fnbCash:fc,fnbCard:fk,
 deliveroo:dl,careem:cr,keeta:kt,tipsCash:tc,tipsCard:tk,
 retailCashVar,retailCardVar,fnbCashVar,fnbCardVar,
@@ -1249,7 +1249,7 @@ async function saveBankingRecord(){
   DENOM_IDS.forEach(function(id,i){dCounts['d'+id.replace('dn-','')]=bnum(id);});
   var dTotal=Math.round(DENOM_IDS.reduce(function(acc,id,i){return acc+bnum(id)*DENOM_VALS[i];},0)*100)/100;
   var record={
-    bankDate:bankDate,refNum:document.getElementById('b-ref-num').value.trim(),
+    bankDate:bankDate,outlet:'Ventum Racing',refNum:document.getElementById('b-ref-num').value.trim(),
     notes:document.getElementById('b-notes').value.trim(),
     cashOnHand:{retail:_ohRetail,fnb:_ohFnb,tips:_ohTips,total:_ohTotal},
     cardTipsRef:_ohCard,denomCounts:dCounts,denomTotal:dTotal,
