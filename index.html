@@ -830,20 +830,20 @@ function renderHistory(){
     var totalPOS=retailPosTotal+fnbPosTotal;
 
     var retailRow=(retailPosTotal>0||retailTotal>0)?
-      '<div class="dept-row">'+
-        '<div><div class="dept-name">🛍️ Retail</div>'+
-        '<div class="dept-breakdown">POS Cash '+fmt(rPosCash)+' · POS Card '+fmt(rPosCard)+'</div>'+
-        '<div class="dept-breakdown" style="margin-top:1px;color:#9ca3af;">Physical Cash '+fmt(e.retailCash||0)+' · Physical Card '+fmt(e.retailCard||0)+'</div>'+
+            '<div class="dept-row" data-id="retail-'+e._id+'" onclick="toggleHistory(this.dataset.id)" style="cursor:pointer;">'+
+        '<div><div class="dept-name">🛍️ Retail</div><div style="font-size:11px;color:#9ca3af;">tap for details ▸</div></div>'+
+        '<div class="expand-details" id="det-retail-'+e._id+'"><div class="dept-breakdown">POS Cash '+fmt(rPosCash)+' · POS Card '+fmt(rPosCard)+'</div>'+
+        '<div class="dept-breakdown" style="margin-top:1px;color:#9ca3af;">Physical Cash '+fmt(e.retailCash||0)+' · Physical Card '+fmt(e.retailCard||0)+'</div></div>'+
         '</div>'+
         '<div style="text-align:right"><div class="dept-total">'+fmt(retailPosTotal)+'</div>'+
         '<span class="dept-var '+rv.cls+'">'+rv.txt+'</span></div>'+
       '</div>':'';
 
     var fnbRow=(fnbPosTotal>0||fnbTotal>0)?
-      '<div class="dept-row">'+
-        '<div><div class="dept-name">🍽️ F&amp;B</div>'+
-        '<div class="dept-breakdown">POS Cash '+fmt(fPosCash)+' · POS Card '+fmt(fPosCard)+(delivery>0?' · Del '+fmt(delivery):'')+'</div>'+
-        '<div class="dept-breakdown" style="margin-top:1px;color:#9ca3af;">Physical Cash '+fmt(e.fnbCash||0)+' · Physical Card '+fmt(e.fnbCard||0)+'</div>'+
+        '<div class="dept-row" data-id="fnb-'+e._id+'" onclick="toggleHistory(this.dataset.id)" style="cursor:pointer;">'+
+          '<div><div class="dept-name">🍽️ F&amp;B</div><div style="font-size:11px;color:#9ca3af;">tap for details ▸</div></div>'+
+            '<div class="expand-details" id="det-fnb-'+e._id+'"><div class="dept-breakdown">POS Cash '+fmt(fPosCash)+' · POS Card '+fmt(fPosCard)+(delivery>0?' · Del '+fmt(delivery):'')+'</div>'+
+          '<div class="dept-breakdown" style="margin-top:1px;color:#9ca3af;">Physical Cash '+fmt(e.fnbCash||0)+' · Physical Card '+fmt(e.fnbCard||0)+'</div></div>'+
         '</div>'+
         '<div style="text-align:right"><div class="dept-total">'+fmt(fnbPosTotal)+'</div>'+
         '<span class="dept-var '+fv.cls+'">'+fv.txt+'</span></div>'+
