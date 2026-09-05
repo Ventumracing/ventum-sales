@@ -1287,7 +1287,7 @@ function loadBankingHistory(salesData,bankData){
   var hs=document.getElementById('b-history-section');
   var c=document.getElementById('b-history-list');
   if(!bankData||!Object.keys(bankData).length){c.innerHTML='<p style="color:var(--muted);font-size:0.85rem;">No banking records yet.</p>';return;}
-  var recs=Object.entries(bankData).sort(function(a,b){return b[1].bankDate.localeCompare(a[1].bankDate);});
+  var recs=Object.entries(bankData).sort(function(a,b){var ad=a[1].bankDate||'';var bd=b[1].bankDate||'';return bd.localeCompare(ad);});
   c.innerHTML=recs.map(function(kv){
     var id=kv[0];
     var v=kv[1];
@@ -1397,7 +1397,7 @@ window.deleteBankingRecord=async function(k){
   window.loadBankingHistory=function(bankData){
     var c=document.getElementById('b-history-list');
     if(!bankData||!Object.keys(bankData).length){c.innerHTML='<p style="color:var(--muted);font-size:0.85rem;">No banking records yet.</p>';return;}
-    var recs=Object.entries(bankData).sort(function(a,b){return b[1].bankDate.localeCompare(a[1].bankDate);});
+    var recs=Object.entries(bankData).sort(function(a,b){var ad=a[1].bankDate||'';var bd=b[1].bankDate||'';return bd.localeCompare(ad);});
     c.innerHTML=recs.map(function(kv){
       var k=kv[0];var v=kv[1];var cv=v.cashVariance||0;
       var vStr=encodeURIComponent(JSON.stringify(v));
