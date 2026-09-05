@@ -1231,7 +1231,7 @@ function calcBankingVariances(){
   var rD=bnum('b-retail-dep');
   var fD=bnum('b-fnb-dep');
   var tD=bnum('b-tips-cash-dep');
-  var totD=rD+fD+tD;  function sv(id,val){var el=document.getElementById(id);if(!el)return;el.textContent=bfmt(val);el.style.color=val===0?'var(--success)':val>0?'var(--accent2)':'var(--danger)';}
+  var totD=rD+fD;  function sv(id,val){var el=document.getElementById(id);if(!el)return;el.textContent=bfmt(val);el.style.color=val===0?'var(--success)':val>0?'var(--accent2)':'var(--danger)';}
   sv('b-retail-var',rD-_ohRetail);sv('b-fnb-var',fD-_ohFnb);sv('b-tips-cash-var',tD-_ohTips);
   var td2=document.getElementById('b-cash-dep-total');if(td2)td2.textContent=bfmt(totD);
   sv('b-cash-var',totD-_ohTotal);
@@ -1244,7 +1244,7 @@ async function saveBankingRecord(){
   var rD=bnum('b-retail-dep');
   var fD=bnum('b-fnb-dep');
   var tD=bnum('b-tips-cash-dep');
-  var cashDep=rD+fD+tD;
+  var cashDep=rD+fD;
   var dCounts={};
   DENOM_IDS.forEach(function(id,i){dCounts['d'+id.replace('dn-','')]=bnum(id);});
   var dTotal=Math.round(DENOM_IDS.reduce(function(acc,id,i){return acc+bnum(id)*DENOM_VALS[i];},0)*100)/100;
@@ -1384,7 +1384,7 @@ window.deleteBankingRecord=async function(k){
     var rD=parseFloat(document.getElementById('b-retail-dep').value)||0;
     var fD=parseFloat(document.getElementById('b-fnb-dep').value)||0;
     var tD=parseFloat(document.getElementById('b-tips-cash-dep').value)||0;
-    var rec={bankDate:bd,refNum:(document.getElementById('b-ref-num').value||'').trim(),notes:(document.getElementById('b-notes').value||'').trim(),retailDeposited:rD,fnbDeposited:fD,tipsCashDeposited:tD,cashDeposited:rD+fD+tD,updatedAt:new Date().toISOString(),enteredBy:window.currentUserEmail};
+    var rec={bankDate:bd,refNum:(document.getElementById('b-ref-num').value||'').trim(),notes:(document.getElementById('b-notes').value||'').trim(),retailDeposited:rD,fnbDeposited:fD,tipsCashDeposited:tD,cashDeposited:rD+fD,updatedAt:new Date().toISOString(),enteredBy:window.currentUserEmail};
     try{
       var res=await fetch(withAuth(DB_BANKING+'/'+_ebk+'.json'),{method:'PATCH',body:JSON.stringify(rec)});
       if(res.ok){alert('Record updated!');_ebk=null;var btn=document.querySelector('button[onclick="saveBankingRecord()"]');if(btn){btn.textContent='Save Banking Record';btn.style.background='';}loadBankingData();}else{alert('Error updating.');}
