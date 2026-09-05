@@ -1355,5 +1355,56 @@ async function acknowledgeVariance(id){
   }catch(ex){showToast('❌ Error: '+ex.message);console.error(ex);}
 }
 </script>
+  <script id="banking-edit-patch">
+var _ebk=null;
+window.editBankingRecord=function(k,v){
+  _ebk=k;
+  var s=function(id,val){var el=document.getElementById(id);if(el)el.value=val||'';};
+  s('b-bank-date',v.bankDate);s('b-retail-dep',v.retailDeposited);
+  s('b-fnb-dep',v.fnbDeposited);s('b-tips-cash-dep',v.tipsCashDeposited);
+  s('b-ref-num',v.refNum);s('b-notes',v.notes);
+  if(typeof calcBankingVariances==='function')calcBankingVariances();
+  var btn=document.querySelector('button[onclick="saveBankingRecord()"]');
+  if(btn){btn.textContent='Update Record';btn.style.background='var(--accent2)';}
+  window.scrollTo({top:0,behavior:'smooth'});
+};
+window.deleteBankingRecord=async function(k){
+  if(!confirm('Delete this banking record? This cannot be undone.'))return;
+  try{
+    await fetch(withAuth(DB_BANKING+'/'+k+'.json'),{method:'DELETE'});
+    loadBankingData();
+  }catch(ex){alert('Error: '+ex.message);}
+};
+(function(){
+  var _orig=window.saveBankingRecord;
+  window.saveBankingRecord=async function(){
+    if(!_ebk)return _orig.apply(this,arguments);
+    var bd=document.getElementById('b-bank-date').value;
+    if(!bd)return alert('Enter date.');
+    var rD=parseFloat(document.getElementById('b-retail-dep').value)||0;
+    var fD=parseFloat(document.getElementById('b-fnb-dep').value)||0;
+    var tD=parseFloat(document.getElementById('b-tips-cash-dep').value)||0;
+    var rec={bankDate:bd,refNum:(document.getElementById('b-ref-num').value||'').trim(),notes:(document.getElementById('b-notes').value||'').trim(),retailDeposited:rD,fnbDeposited:fD,tipsCashDeposited:tD,cashDeposited:rD+fD+tD,updatedAt:new Date().toISOString(),enteredBy:window.currentUserEmail};
+    try{
+      var res=await fetch(withAuth(DB_BANKING+'/'+_ebk+'.json'),{method:'PATCH',body:JSON.stringify(rec)});
+      if(res.ok){alert('Record updated!');_ebk=null;var btn=document.querySelector('button[onclick="saveBankingRecord()"]');if(btn){btn.textContent='Save Banking Record';btn.style.background='';}loadBankingData();}else{alert('Error updating.');}
+    }catch(ex){alert('Error: '+ex.message);}
+  };
+})();
+(function patch(){
+  var orig=window.loadBankingHistory;
+  if(!orig){setTimeout(patch,500);return;}
+  window.loadBankingHistory=function(bankData){
+    var c=document.getElementById('b-history-list');
+    if(!bankData||!Object.keys(bankData).length){c.innerHTML='<p style="color:var(--muted);font-size:0.85rem;">No banking records yet.</p>';return;}
+    var recs=Object.entries(bankData).sort(function(a,b){return b[1].bankDate.localeCompare(a[1].bankDate);});
+    c.innerHTML=recs.map(function(kv){
+      var k=kv[0];var v=kv[1];var cv=v.cashVariance||0;
+      var vStr=encodeURIComponent(JSON.stringify(v));
+      return '<div style="background:var(--bg);border-radius:10px;padding:12px 14px;margin-bottom:8px;font-size:0.85rem;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><strong>'+v.bankDate+'</strong><div style="display:flex;gap:6px;align-items:center;"><span style="color:var(--accent);font-weight:600;">'+bfmt(v.cashDeposited)+'</span><button onclick="editBankingRecord(\''+k+'\',JSON.parse(decodeURIComponent(\''+vStr+'\')))" style="font-size:0.75rem;padding:3px 8px;border-radius:6px;border:1px solid var(--muted);background:var(--card);color:var(--text);cursor:pointer;">Edit</button><button onclick="deleteBankingRecord(\''+k+'\')" style="font-size:0.75rem;padding:3px 8px;border-radius:6px;border:1px solid #ef4444;background:var(--card);color:#ef4444;cursor:pointer;">Delete</button></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;color:var(--muted);"><span>Retail dep:</span><span style="text-align:right;color:var(--text);">'+bfmt(v.retailDeposited)+'</span><span>Coffee dep:</span><span style="text-align:right;color:var(--text);">'+bfmt(v.fnbDeposited)+'</span><span>Tips dep:</span><span style="text-align:right;color:var(--text);">'+bfmt(v.tipsCashDeposited)+'</span><span>Variance:</span><span style="text-align:right;color:'+(cv===0?'var(--success)':cv>0?'var(--accent2)':'var(--danger)')+';">'+bfmt(cv)+'</span>'+(v.refNum?'<span>Ref:</span><span style="text-align:right;color:var(--text);">'+v.refNum+'</span>':'')+'</div>'+(v.notes?'<p style="margin:8px 0 0;font-style:italic;color:var(--muted);">'+v.notes+'</p>':'')+'</div>';
+    }).join('');
+  };
+})();
+</script>
 </body>
 </html>
