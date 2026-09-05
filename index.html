@@ -1431,5 +1431,43 @@ window.deleteBankingRecord=async function(k){
 })();
 </script>
 
+<script id="banking-v3">
+(function(){
+  function pAed(el){return parseFloat(((el||{}).textContent||'').replace(/AED\s*/,'').replace(/,/g,''))||0;}
+  function bfmtL(n){return 'AED '+(parseFloat(n)||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
+  function bnum(id){var n=parseFloat((document.getElementById(id)||{}).value);return isFinite(n)&&n>0?n:0;}
+  function fixOhTotal(){
+    var ret=pAed(document.getElementById('b-oh-retail'));
+    var fnb=pAed(document.getElementById('b-oh-fnb'));
+    var el=document.getElementById('b-oh-total');
+    if(el)el.textContent=bfmtL(ret+fnb);
+  }
+  function patchCBV(){
+    var orig=window.calcBankingVariances;
+    if(!orig){setTimeout(patchCBV,300);return;}
+    window.calcBankingVariances=function(){
+      orig.apply(this,arguments);
+      fixOhTotal();
+      var rD=bnum('b-retail-dep');var fD=bnum('b-fnb-dep');var totD=rD+fD;
+      var ohNoTips=pAed(document.getElementById('b-oh-retail'))+pAed(document.getElementById('b-oh-fnb'));
+      var variance=Math.round((totD-ohNoTips)*100)/100;
+      var el=document.getElementById('b-cash-var');
+      if(el){el.textContent=bfmtL(variance);el.style.color=variance===0?'var(--success)':variance>0?'var(--accent2)':'var(--danger)';}
+    };
+  }
+  function patchLBD(){
+    var orig=window.loadBankingData;
+    if(!orig){setTimeout(patchLBD,300);return;}
+    window.loadBankingData=function(){
+      var r=orig.apply(this,arguments);
+      if(r&&r.then)r.then(function(){setTimeout(fixOhTotal,300);});
+      else setTimeout(fixOhTotal,500);
+      return r;
+    };
+  }
+  patchCBV();patchLBD();
+  setTimeout(fixOhTotal,2000);
+})();
+</script>
 </body>
 </html>
