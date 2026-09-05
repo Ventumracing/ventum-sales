@@ -1406,5 +1406,30 @@ window.deleteBankingRecord=async function(k){
   };
 })();
 </script>
+  
+<script id="banking-v2">
+(function(){
+  window.deleteBankingRecord=function(k){
+    if(!confirm('Delete this record? Cannot be undone.'))return;
+    fetch(withAuth(DB_BANKING+'/'+k+'.json'),{method:'DELETE'}).then(function(r){
+      if(r.ok)window.location.reload();
+      else alert('Delete failed: '+r.status);
+    }).catch(function(e){alert('Error: '+e.message);});
+  };
+  function newHist(d){
+    var c=document.getElementById('b-history-list');
+    if(!d||!Object.keys(d).length){c.innerHTML='<p style="color:var(--muted)">No banking records yet.</p>';return;}
+    var r=Object.entries(d).filter(function(e){return!!e[1].bankDate;}).sort(function(a,b){return(b[1].bankDate||'').localeCompare(a[1].bankDate||'');});
+    if(!r.length){c.innerHTML='<p style="color:var(--muted)">No records with dates found.</p>';return;}
+    c.innerHTML='<table style="width:100%;border-collapse:collapse;font-size:0.85rem"><thead><tr style="color:var(--muted);border-bottom:2px solid var(--border)"><th style="text-align:left;padding:8px 4px">Date Banked</th><th style="text-align:right;padding:8px 4px">Amount</th><th style="text-align:right;padding:8px 4px">Variance</th><th style="padding:8px 4px"></th></tr></thead><tbody>'+r.map(function(kv){var k=kv[0];var v=kv[1];var cv=v.cashVariance||0;var vs=encodeURIComponent(JSON.stringify(v));return'<tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 4px">'+v.bankDate+'</td><td style="padding:8px 4px;text-align:right;color:var(--accent);font-weight:600">'+bfmt(v.cashDeposited)+'</td><td style="padding:8px 4px;text-align:right;color:'+(cv===0?'var(--success)':cv>0?'var(--accent2)':'var(--danger)')+'">'+bfmt(cv)+'</td><td style="padding:8px 4px;text-align:right"><button onclick="editBankingRecord(\''+k+'\',JSON.parse(decodeURIComponent(\''+vs+'\')));" style="font-size:0.75rem;padding:2px 8px;border-radius:5px;border:1px solid var(--muted);background:var(--card);color:var(--text);cursor:pointer;margin-right:4px">Edit</button><button onclick="deleteBankingRecord(\''+k+'\');" style="font-size:0.75rem;padding:2px 8px;border-radius:5px;border:1px solid #ef4444;background:var(--card);color:#ef4444;cursor:pointer">Del</button></td></tr>';}).join('')+'</tbody></table>';
+  }
+  function tryPatch(){
+    if(window.loadBankingHistory){window.loadBankingHistory=newHist;}
+    else{setTimeout(tryPatch,300);}
+  }
+  tryPatch();
+})();
+</script>
+
 </body>
 </html>
