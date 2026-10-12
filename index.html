@@ -1469,5 +1469,39 @@ window.deleteBankingRecord=async function(k){
   setTimeout(fixOhTotal,2000);
 })();
 </script>
+<script id="banking-v4">
+(function(){
+  function simplifyUI(){
+    var dep=document.getElementById('b-retail-dep');
+    if(!dep)return false;
+    var row=dep.closest?dep.closest('.input-row'):dep.parentElement;
+    var lbl=row&&row.querySelector('label');
+    if(lbl)lbl.textContent='Cash Deposited';
+    dep.placeholder='';
+    ['b-retail-var','b-fnb-dep','b-fnb-var','b-tips-cash-dep','b-tips-cash-var','b-cash-dep-total'].forEach(function(id){
+      var el=document.getElementById(id);if(!el)return;
+      var r=el.closest?el.closest('.input-row'):el.parentElement;
+      if(r)r.style.display='none';
+    });
+    return true;
+  }
+  function tryUI(){if(!simplifyUI())setTimeout(tryUI,300);}
+  tryUI();
+  function patchEdit(){
+    var orig=window.editBankingRecord;
+    if(!orig){setTimeout(patchEdit,300);return;}
+    window.editBankingRecord=function(k,v){
+      orig.apply(this,arguments);
+      setTimeout(function(){
+        var dep=document.getElementById('b-retail-dep');
+        if(dep){dep.value=v.cashDeposited||0;}
+        if(window.calcBankingVariances)calcBankingVariances();
+        simplifyUI();
+      },150);
+    };
+  }
+  patchEdit();
+})();
+</script>
 </body>
 </html>
