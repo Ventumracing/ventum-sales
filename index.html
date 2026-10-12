@@ -1566,5 +1566,40 @@ window.deleteBankingRecord=async function(k){
   patchEdit();patchSave();
 })();
 </script>
+<script id="banking-v6">
+(function(){
+  function patchNewSave(){
+    var v5Save=window.saveBankingRecord;
+    if(!v5Save){setTimeout(patchNewSave,300);return;}
+    window.saveBankingRecord=async function(){
+      var editKey=window._bankEditKey;
+      if(editKey){return v5Save.apply(this,arguments);}
+      var bankDate=(document.getElementById('b-bank-date')||{}).value;
+      if(!bankDate)return alert('Please enter the date banked.');
+      var rD=parseFloat((document.getElementById('b-retail-dep')||{}).value)||0;
+      var refNum=((document.getElementById('b-ref-num')||{}).value||'').trim();
+      var notes=((document.getElementById('b-notes')||{}).value||'').trim();
+      var payload={bankDate:bankDate,cashDeposited:rD,retailDeposited:rD,fnbDeposited:0,tipsCashDeposited:0,refNum:refNum,notes:notes,createdAt:new Date().toISOString()};
+      var btn=document.getElementById('bank-save-btn');
+      if(btn){btn.disabled=true;btn.textContent='Saving...';}
+      try{
+        var res=await fetch(withAuth(DB_BANKING+'.json'),{method:'POST',body:JSON.stringify(payload)});
+        if(res.ok){
+          alert('Banking record saved!');
+          if(btn){btn.disabled=false;btn.textContent='Save Banking Record';}
+          if(window.loadBankingData)loadBankingData();
+        }else{
+          alert('Save failed ('+res.status+'). Please try again.');
+          if(btn){btn.disabled=false;btn.textContent='Save Banking Record';}
+        }
+      }catch(ex){
+        alert('Error: '+ex.message);
+        if(btn){btn.disabled=false;btn.textContent='Save Banking Record';}
+      }
+    };
+  }
+  patchNewSave();
+})();
+</script>
 </body>
 </html>
