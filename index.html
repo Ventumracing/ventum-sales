@@ -1416,7 +1416,7 @@ window.deleteBankingRecord=async function(k){
       else alert('Delete failed: '+r.status);
     }).catch(function(e){alert('Error: '+e.message);});
   };
-  function newHist(d){
+  function newHist(salesData,bankData){var d=bankData;
     var c=document.getElementById('b-history-list');
     if(!d||!Object.keys(d).length){c.innerHTML='<p style="color:var(--muted)">No banking records yet.</p>';return;}
     var r=Object.entries(d).filter(function(e){return!!e[1].bankDate;}).sort(function(a,b){return(b[1].bankDate||'').localeCompare(a[1].bankDate||'');});
