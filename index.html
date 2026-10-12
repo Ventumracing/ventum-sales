@@ -1503,5 +1503,67 @@ window.deleteBankingRecord=async function(k){
   patchEdit();
 })();
 </script>
+<script id="banking-v5">
+(function(){
+  window._bankEditKey=null;
+  function patchEdit(){
+    var orig=window.editBankingRecord;
+    if(!orig){setTimeout(patchEdit,300);return;}
+    window.editBankingRecord=function(k,v){
+      window._bankEditKey=k;
+      orig.apply(this,arguments);
+      setTimeout(function(){
+        var dep=document.getElementById('b-retail-dep');
+        var cashVal=(v.cashDeposited&&v.cashDeposited>0)?v.cashDeposited:((v.retailDeposited||0)+(v.fnbDeposited||0));
+        if(dep)dep.value=cashVal||'';
+        if(window.calcBankingVariances)calcBankingVariances();
+        ['b-retail-var','b-fnb-dep','b-fnb-var','b-tips-cash-dep','b-tips-cash-var','b-cash-dep-total'].forEach(function(id){
+          var el=document.getElementById(id);if(!el)return;
+          var r=el.closest?el.closest('.input-row'):el.parentElement;
+          if(r)r.style.display='none';
+        });
+        var lbl=document.getElementById('b-retail-dep')&&document.getElementById('b-retail-dep').closest&&document.getElementById('b-retail-dep').closest('.input-row')&&document.getElementById('b-retail-dep').closest('.input-row').querySelector('label');
+        if(lbl)lbl.textContent='Cash Deposited';
+        var btn=document.getElementById('bank-save-btn');
+        if(btn)btn.textContent='Update Banking Record';
+      },250);
+    };
+  }
+  function patchSave(){
+    var origSave=window.saveBankingRecord;
+    if(!origSave){setTimeout(patchSave,300);return;}
+    window.saveBankingRecord=async function(){
+      var editKey=window._bankEditKey;
+      if(!editKey){return origSave.apply(this,arguments);}
+      var bankDate=(document.getElementById('b-bank-date')||{}).value;
+      if(!bankDate)return alert('Please enter the date banked.');
+      var rD=parseFloat((document.getElementById('b-retail-dep')||{}).value)||0;
+      var refNum=((document.getElementById('b-ref-num')||{}).value||'').trim();
+      var notes=((document.getElementById('b-notes')||{}).value||'').trim();
+      var patch={retailDeposited:rD,fnbDeposited:0,tipsCashDeposited:0,cashDeposited:rD,refNum:refNum,notes:notes,updatedAt:new Date().toISOString()};
+      window._bankEditKey=null;
+      var btn=document.getElementById('bank-save-btn');
+      if(btn){btn.disabled=true;btn.textContent='Saving...';}
+      try{
+        var res=await fetch(withAuth(DB_BANKING+'/'+editKey+'.json'),{method:'PATCH',body:JSON.stringify(patch)});
+        if(res.ok){
+          alert('Banking record updated!');
+          if(btn){btn.disabled=false;btn.textContent='Save Banking Record';}
+          if(window.loadBankingData)loadBankingData();
+        }else{
+          window._bankEditKey=editKey;
+          alert('Update failed ('+res.status+'). Please try again.');
+          if(btn){btn.disabled=false;btn.textContent='Update Banking Record';}
+        }
+      }catch(ex){
+        window._bankEditKey=editKey;
+        alert('Error: '+ex.message);
+        if(btn){btn.disabled=false;btn.textContent='Update Banking Record';}
+      }
+    };
+  }
+  patchEdit();patchSave();
+})();
+</script>
 </body>
 </html>
