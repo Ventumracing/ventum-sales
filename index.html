@@ -1601,5 +1601,23 @@ window.deleteBankingRecord=async function(k){
   patchNewSave();
 })();
 </script>
+
+<script id="banking-v7">
+(function(){
+  function patchHist(){
+    if(!window.loadBankingHistory){setTimeout(patchHist,300);return;}
+    var _bfmt=window.bfmt||function(n){n=parseFloat(n)||0;return'AED '+n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',');};
+    window.loadBankingHistory=function(salesData,bankData){
+      var c=document.getElementById('b-history-list');
+      if(!c)return;
+      if(!bankData||!Object.keys(bankData).length){c.innerHTML='<p style="color:var(--muted)">No banking records yet.</p>';return;}
+      var rows=Object.entries(bankData).filter(function(e){return!!e[1].bankDate;}).sort(function(a,b){return b[1].bankDate>a[1].bankDate?1:-1;});
+      if(!rows.length){c.innerHTML='<p style="color:var(--muted)">No records with dates found.</p>';return;}
+      c.innerHTML='<table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="border-bottom:1px solid var(--border)"><th style="padding:8px 4px;text-align:left">Date Banked</th><th style="padding:8px 4px;text-align:left">Ref #</th><th style="padding:8px 4px;text-align:right">Amount</th><th style="padding:8px 4px;text-align:right">Variance</th><th style="padding:8px 4px"></th></tr></thead><tbody>'+rows.map(function(kv){var k=kv[0];var v=kv[1];var bDate=v.bankDate;var expected=0;Object.values(salesData||{}).forEach(function(s){if(s&&s.date===bDate){expected+=(parseFloat(s.retailCash)||0)+(parseFloat(s.fnbCash)||0)+(parseFloat(s.tipsCash)||0);}});expected=Math.round(expected*100)/100;var dep=parseFloat(v.cashDeposited)||0;var cv=Math.round((dep-expected)*100)/100;var vs=encodeURIComponent(JSON.stringify(v));return'<tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 4px">'+bDate+'</td><td style="padding:8px 4px">'+(v.refNum||'')+'</td><td style="padding:8px 4px;text-align:right;color:var(--accent);font-weight:600">'+_bfmt(dep)+'</td><td style="padding:8px 4px;text-align:right;color:'+(cv===0?'var(--success)':cv>0?'var(--accent2)':'var(--danger)')+'">'+_bfmt(cv)+'</td><td style="padding:8px 4px;text-align:right"><button onclick="editBankingRecord(\''+k+'\',JSON.parse(decodeURIComponent(\''+vs+'\'))" style="padding:2px 8px;border-radius:5px;border:1px solid var(--muted);background:var(--card);color:var(--text);cursor:pointer;margin-right:4px">Edit</button><button onclick="deleteBankingRecord(\''+k+'\'" style="padding:2px 8px;border-radius:5px;border:1px solid #ef4444;background:var(--card);color:#ef4444;cursor:pointer">Del</button></td></tr>';}).join('')+'</tbody></table>';
+    };
+  }
+  patchHist();
+})();
+</script>
 </body>
 </html>
