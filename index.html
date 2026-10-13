@@ -1683,5 +1683,19 @@ window.deleteBankingRecord=async function(k){
   patchCalc();
 })();
 </script>
+<script id="banking-v10">
+(function(){
+  function patchCOH(){
+    var orig=window.computeCashOnHand;
+    if(!orig){setTimeout(patchCOH,300);return;}
+    window.computeCashOnHand=function(salesData,bankData,cutoff){
+      var r=orig.apply(this,arguments);
+      r.total=Math.round((r.retail+r.fnb)*100)/100;
+      return r;
+    };
+  }
+  patchCOH();
+})();
+</script>
 </body>
 </html>
