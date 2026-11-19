@@ -1697,5 +1697,31 @@ window.deleteBankingRecord=async function(k){
   patchCOH();
 })();
 </script>
+<script id="banking-v11">
+(function(){
+  function patch(){
+    var origSave=window.saveBankingRecord;
+    if(!origSave){setTimeout(patch,300);return;}
+    window.saveBankingRecord=function(){
+      var depField=document.getElementById('b-retail-dep');
+      if(depField&&(parseFloat(depField.value)||0)===0){
+        var ohTotal=(parseFloat(window._ohRetail)||0)+(parseFloat(window._ohFnb)||0);
+        if(ohTotal>0) depField.value=ohTotal.toFixed(2);
+      }
+      return origSave.apply(this,arguments);
+    };
+    function hideVar(){
+      document.querySelectorAll('[id*="var"],[id*="Var"],[id*="variance"],[id*="Variance"]').forEach(function(el){
+        var row=el.closest('.input-row')||el.parentElement;
+        if(row) row.style.display='none';
+      });
+    }
+    hideVar();
+    setTimeout(hideVar,500);
+    setTimeout(hideVar,1500);
+  }
+  patch();
+})();
+</script>
 </body>
 </html>
