@@ -1697,18 +1697,6 @@ window.deleteBankingRecord=async function(k){
   patchCOH();
 })();
 </script>
-<script id="banking-v11">
-(function(){
-  function hideVar(){
-    document.querySelectorAll('[id*="var"],[id*="Var"],[id*="variance"],[id*="Variance"]').forEach(function(el){
-      var row=el.closest('.input-row')||el.parentElement;
-      if(row) row.style.display='none';
-    });
-  }
-  hideVar();
-  setTimeout(hideVar,500);
-  setTimeout(hideVar,1500);
-})();
-</script>
+
 </body>
 </html>
